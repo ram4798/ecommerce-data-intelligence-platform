@@ -19,6 +19,12 @@ def get(endpoint,params=None,raw=False):
 def dollars(cents):
     return f"${cents/100:,.2f}"
 
+def quality_frame(checks):
+    frame = pd.DataFrame(checks)
+    if "detail" in frame.columns:
+        frame["detail"] = frame["detail"].astype("string")
+    return frame
+
 def chart(data,label,title):
     frame=pd.DataFrame(data)
     if frame.empty:
@@ -102,8 +108,8 @@ with event_tab:
     st.caption("Purchase events are synthetic and not linked to batch orders; event counts are not conversion rates.")
 with health_tab:
     st.subheader("Published snapshot quality")
-    st.dataframe(pd.DataFrame(q["published"]["checks"]),hide_index=True,use_container_width=True)
+    st.dataframe(quality_frame(q["published"]["checks"]),hide_index=True,use_container_width=True)
     if latest:
         st.subheader("Latest quality report")
-        st.dataframe(pd.DataFrame(latest["checks"]),hide_index=True,use_container_width=True)
+        st.dataframe(quality_frame(latest["checks"]),hide_index=True,use_container_width=True)
     st.write("Operational tools: [Dagster](http://localhost:3000) · [Grafana](http://localhost:3001) · [Prometheus](http://localhost:9090) · [API docs](http://localhost:8000/docs)")
