@@ -32,7 +32,7 @@ Isolated temporary-file test rejects failed quality, simulates missing source ta
 
 ## Observed baseline (Nov 24, 2026)
 
-User verified 1500 orders, 3026 order lines, 100 unique events, 17 quality checks, 7-asset Dagster run 98 seconds, publication 135 ms. Standalone Ollama generation 36.51 tokens/s and model startup 4.89 s (not API latency). Local Phase 8 tests 6/6; 12 business scenarios eventually passed after fixes, 4 security requests rejected. New benchmark results pending; no claimed speedup or production SLA.
+User verified 1500 orders, 3026 order lines, 100 unique events, 17 quality checks, 7-asset Dagster run 98 seconds, publication 135 ms. Standalone Ollama generation 36.51 tokens/s and model startup 4.89 s (not API latency). Local Phase 8 tests 6/6; 12 business scenarios eventually passed after fixes, 4 security requests rejected. Subsequent benchmark results are recorded below; no production SLA.
 
 ## Measured Phase 9 baseline (Nov 24, 2026)
 
@@ -58,4 +58,4 @@ All counts and sums reconciled. Only orders loaded; first run includes cold impo
 
 Latest historical stage durations (seconds): batch 48.478, streaming 29.318, export 14.274, dbt 2.878, quality 0.026, documentation 1.773, publication 0.068. Previous Dagster wall time 98 seconds. Five Phase 9 tests passed in 1.540 seconds before ownership correction.
 
-macOS Homebrew Python may exec its framework binary after startup. Manager now records identity after readiness and recognizes the narrowly specified framework transition for existing PID records, requiring matching start time, full module arguments and process group. It does not adopt unknown PIDs. Local lifecycle retest pending.
+macOS Homebrew Python may exec its framework binary after startup. Manager now records identity after readiness and recognizes the narrowly specified framework transition for existing PID records, requiring matching start time, full module arguments and process group. It does not adopt unknown PIDs. Local lifecycle retest passed: all three services reported healthy managed, stopped successfully, released their ports and restarted healthy managed. Six tests passed in 0.747 seconds. Streamlit displayed Customer ID and paid dollar values correctly. Actual peak memory and full-stack scale remain unmeasured.
