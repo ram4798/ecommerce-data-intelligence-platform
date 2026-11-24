@@ -13,6 +13,20 @@ class BenchmarkTests(unittest.TestCase):
             stop("api")
             kill.assert_not_called()
 
+    def test_macos_framework_identity(self):
+        from ecommerce.service_manager import identity_matches,ROOT
+        stamp="Tue Nov 24 16:48:20 2026     "
+        args=" -m uvicorn ecommerce.api:app --host 127.0.0.1 --port 8000"
+        original=stamp+str(ROOT/".venv/bin/python")+args
+        actual=stamp+"/opt/homebrew/Cellar/python@3.11/3.11.18/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python"+args
+        with patch("ecommerce.service_manager.sys.platform","darwin"):
+            self.assertTrue(identity_matches("api",original,actual))
+            self.assertFalse(identity_matches("api",original,actual.replace("16:48:20","16:48:21")))
+            self.assertFalse(identity_matches("api",original,actual.replace("8000","8001")))
+            self.assertFalse(identity_matches("dashboard",original,actual))
+            self.assertFalse(identity_matches("api",original,actual.replace("/opt/homebrew/","/tmp/")))
+        self.assertTrue(identity_matches("api",actual,actual))
+
 @unittest.skipUnless(os.getenv("RUN_APP_TESTS")=="1","requires application dependencies")
 class Phase9Tests(unittest.TestCase):
     def test_scale(self):

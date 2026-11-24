@@ -33,13 +33,39 @@ def healthy(port,path):
         return False
 
 def identity(pid):
-    result=subprocess.run(["ps","-p",str(pid),"-o","lstart=","-o","command="],capture_output=True,text=True)
+    result=subprocess.run(["ps","-ww","-p",str(pid),"-o","lstart=","-o","command="],capture_output=True,text=True)
     return result.stdout.strip() if result.returncode==0 else ""
+
+def identity_matches(name, recorded, current):
+    """Accept macOS framework Python exec only with unchanged start and arguments."""
+    if not recorded or not current:
+        return False
+    if recorded == current:
+        return True
+    if name not in ("api","dashboard","dagster"):
+        return False
+    old=recorded.split(maxsplit=5)
+    new=current.split(maxsplit=5)
+    if len(old)!=6 or len(new)!=6 or old[:5]!=new[:5]:
+        return False
+    # Compare the entire module invocation, not a substring or port alone.
+    old_exe, sep, old_args=old[5].partition(" -m ")
+    new_exe, sep2, new_args=new[5].partition(" -m ")
+    expected=" ".join(SERVICES[name][2][2:])
+    if not sep or not sep2 or old_args!=expected or new_args!=expected:
+        return False
+    venv_python=ROOT/".venv"/"bin"/"python"
+    if old_exe not in (str(venv_python),sys.executable):
+        return False
+    if sys.platform!="darwin":
+        return False
+    # macOS framework launcher rewrites argv[0] after exec.
+    return new_exe.startswith("/opt/homebrew/Cellar/python@3.11/") and new_exe.endswith("/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python")
 
 def owned(name):
     try:
         data=json.loads((STATE/(name+".json")).read_text())
-        if data["identity"] and identity(data["pid"])==data["identity"] and os.getpgid(data["pid"])==data["pid"]:
+        if identity_matches(name,data["identity"],identity(data["pid"])) and os.getpgid(data["pid"])==data["pid"]:
             return data["pid"]
     except (OSError,ValueError,KeyError,TypeError):
         pass
@@ -65,7 +91,11 @@ def start(name):
     for _ in range(60):
         if p.poll() is not None:
             raise RuntimeError(f"{name} exited; inspect data/services/{name}.log")
-        if healthy(port,path):
+        if healthy(port,path) and p.poll() is None:
+            current=identity(p.pid)
+            if not current or os.getpgid(p.pid)!=p.pid:
+                raise RuntimeError(f"{name}: cannot verify launched process")
+            (STATE/(name+".json")).write_text(json.dumps({"pid":p.pid,"identity":current}))
             print(f"{name}: ready on {port}")
             return
         time.sleep(1)
@@ -78,7 +108,7 @@ def stop(name):
         return
     os.killpg(pid,signal.SIGTERM)
     for _ in range(30):
-        if not owned(name):
+        if not owned(name) and not listening(SERVICES[name][0]):
             (STATE/(name+".json")).unlink(missing_ok=True)
             print(f"{name}: stopped")
             return

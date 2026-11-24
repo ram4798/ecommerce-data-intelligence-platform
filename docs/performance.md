@@ -33,3 +33,29 @@ Isolated temporary-file test rejects failed quality, simulates missing source ta
 ## Observed baseline (Nov 24, 2026)
 
 User verified 1500 orders, 3026 order lines, 100 unique events, 17 quality checks, 7-asset Dagster run 98 seconds, publication 135 ms. Standalone Ollama generation 36.51 tokens/s and model startup 4.89 s (not API latency). Local Phase 8 tests 6/6; 12 business scenarios eventually passed after fixes, 4 security requests rejected. New benchmark results pending; no claimed speedup or production SLA.
+
+## Measured Phase 9 baseline (Nov 24, 2026)
+
+Apple M2, 8 GB, macOS 15.3.1; 1500-order snapshot, 20 requests per endpoint, two workers. 100 HTTP requests succeeded with zero errors. Mean / p95 / successful requests per second:
+
+| Endpoint | Mean ms | p95 ms | req/s |
+|---|---:|---:|---:|
+| Health | 18.777 | 38.718 | 105.87 |
+| KPIs | 15.312 | 21.494 | 128.02 |
+| Sales | 62.559 | 216.297 | 31.82 |
+| Customers | 17.145 | 29.275 | 115.84 |
+| Events | 12.512 | 16.308 | 158.57 |
+
+LLM order count: mean 6841.949 ms, median 5382.351 ms, 3/3 correct. Rule-based customer count: mean 45.681 ms, median 17.115 ms, 3/3 correct. Different questions, small samples; not a controlled speedup comparison.
+
+| Generated orders | Generated lines | Generate ms | Validate ms | Orders load ms | Aggregate ms |
+|---:|---:|---:|---:|---:|---:|
+| 1500 | 3026 | 26.01 | 3.03 | 533.50 | 3.63 |
+| 10000 | 19998 | 102.48 | 16.27 | 9.45 | 0.41 |
+| 50000 | 100227 | 511.31 | 87.22 | 36.10 | 0.30 |
+
+All counts and sums reconciled. Only orders loaded; first run includes cold import overhead, one observation per size. Not full-stack scale. API/dashboard were still running because of ownership bug, so not a fully isolated machine workload.
+
+Latest historical stage durations (seconds): batch 48.478, streaming 29.318, export 14.274, dbt 2.878, quality 0.026, documentation 1.773, publication 0.068. Previous Dagster wall time 98 seconds. Five Phase 9 tests passed in 1.540 seconds before ownership correction.
+
+macOS Homebrew Python may exec its framework binary after startup. Manager now records identity after readiness and recognizes the narrowly specified framework transition for existing PID records, requiring matching start time, full module arguments and process group. It does not adopt unknown PIDs. Local lifecycle retest pending.
