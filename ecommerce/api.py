@@ -109,3 +109,24 @@ def export_sales(group: Literal["region","category","status","date","product"]="
     writer.writeheader()
     writer.writerows(breakdown(con,f,group))
     return StreamingResponse(iter([buf.getvalue()]),media_type="text/csv",headers={"Content-Disposition":"attachment; filename=sales.csv"})
+
+# The model selects a typed plan; the server alone constructs SQL.
+from ecommerce.assistant import Ask, propose, answer, context_for
+import httpx
+from threading import BoundedSemaphore
+assistant_slot=BoundedSemaphore(1)
+
+@app.post("/api/assistant")
+def ask_assistant(request: Ask, con=Depends(connection)):
+    if not assistant_slot.acquire(blocking=False):
+        raise HTTPException(429,"An analytics question is already running")
+    try:
+        context=context_for(con)
+        plan=propose(request.question,request.provider,context)
+        return answer(con,plan,context)
+    except httpx.HTTPError as exc:
+        raise HTTPException(503,"Model service unavailable or timed out") from exc
+    except (ValueError,KeyError,TypeError) as exc:
+        raise HTTPException(422,"Model returned an invalid or unsupported query plan; rephrase the question") from exc
+    finally:
+        assistant_slot.release()

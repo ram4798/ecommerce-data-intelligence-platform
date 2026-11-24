@@ -65,7 +65,7 @@ k=get("/api/kpis",params)
 for col,label,value in zip(st.columns(5),["Gross order value","Paid order value","Orders","Purchasing customers*","Units"],[dollars(k["gross_cents"]),dollars(k["paid_cents"]),f'{k["orders"]:,}',f'{k["customers"]:,}',f'{k["units"]:,}']):
     col.metric(label,value)
 st.caption("*Customers with matching order lines, including unpaid/cancelled orders. Gross includes all statuses; paid includes paid/shipped before returns. Category filters select line values, not whole-order totals.")
-sales_tab,customer_tab,event_tab,health_tab=st.tabs(["Sales","Customers & payments","Streaming events","Data health"])
+sales_tab,customer_tab,event_tab,health_tab,ai_tab=st.tabs(["Sales","Customers & payments","Streaming events","Data health","AI assistant"])
 with sales_tab:
     left,right=st.columns(2)
     with left:
@@ -113,3 +113,40 @@ with health_tab:
         st.subheader("Latest quality report")
         st.dataframe(quality_frame(latest["checks"]),hide_index=True,use_container_width=True)
     st.write("Operational tools: [Dagster](http://localhost:3000) · [Grafana](http://localhost:3001) · [Prometheus](http://localhost:9090) · [API docs](http://localhost:8000/docs)")
+
+with ai_tab:
+    st.subheader("Ask your data")
+    st.caption("Questions are independent and use the published snapshot. Sidebar filters do not apply; include filters in your question. The model selects a validated query plan, not executable SQL.")
+    provider=st.selectbox("Model provider",["ollama","openai"],help="OpenAI requires explicit server-side opt-in and may incur charges. Questions and schema/filter metadata are sent to OpenAI only when selected.")
+    st.caption("Try: Which region has the highest gross sales? How many orders were cancelled? Who are the top 5 customers by paid value?")
+    if "analytics_chat" not in st.session_state:
+        st.session_state.analytics_chat=[]
+    if st.button("Clear conversation"):
+        st.session_state.analytics_chat=[]
+    with st.form("analytics_question",clear_on_submit=True):
+        question=st.text_input("Ask a business question",max_chars=1000)
+        submitted=st.form_submit_button("Ask")
+    if submitted and question.strip():
+        with st.spinner("Planning and querying the published snapshot..."):
+            try:
+                response=httpx.post(API+"/api/assistant",json={"question":question,"provider":provider},timeout=135)
+                response.raise_for_status()
+                st.session_state.analytics_chat.append((question,response.json()))
+                st.session_state.analytics_chat=st.session_state.analytics_chat[-10:]
+            except httpx.HTTPStatusError as exc:
+                st.error(exc.response.json().get("detail","Assistant request failed"))
+            except httpx.HTTPError:
+                st.error("Assistant service unavailable. Check FastAPI and Ollama.")
+    for question,result in st.session_state.analytics_chat:
+        with st.chat_message("user"):
+            st.text(question)
+        with st.chat_message("assistant"):
+            st.text(result["answer"])
+            if result["rows"]:
+                st.dataframe(pd.DataFrame(result["rows"]),hide_index=True,use_container_width=True)
+            with st.expander("Query plan and evidence"):
+                st.json(result["plan"])
+                if result["sql"]:
+                    st.code(result["sql"],language="sql")
+                    st.json(result["parameters"])
+                st.caption("Snapshot publication (UTC): "+pd.to_datetime(result["published_at"],unit="s",utc=True).isoformat())

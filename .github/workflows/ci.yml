@@ -38,5 +38,6 @@ jobs:
           docker run --rm -v "$PWD/monitoring:/etc/prometheus:ro" --entrypoint /bin/promtool prom/prometheus:v3.2.1 check config /etc/prometheus/prometheus.yml
       - run: pip install -r requirements-app.txt
       - run: RUN_APP_TESTS=1 python -m unittest discover -s tests -p test_api.py -v
+      - run: RUN_APP_TESTS=1 python -m unittest discover -s tests -p test_assistant.py -v
       - if: always()
         run: docker compose -f compose.yaml -f compose.kafka.yaml down -v
