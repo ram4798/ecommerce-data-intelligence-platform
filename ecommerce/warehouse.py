@@ -1,5 +1,8 @@
 """Export consistent per-table Delta snapshots to a local dbt input catalog."""
 import argparse
+import json
+import time
+from ecommerce.observability import atomic
 import os
 from pathlib import Path
 from ecommerce.lakehouse import ROOT, read, session
@@ -33,6 +36,7 @@ def export(spark, lake_root, output):
         except Exception:
             con.execute("ROLLBACK")
             raise
+    atomic(output.parent / "warehouse_export.json", json.dumps({"exported_at": time.time()}))
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)

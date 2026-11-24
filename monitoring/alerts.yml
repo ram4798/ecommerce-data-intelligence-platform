@@ -1,0 +1,27 @@
+groups:
+  - name: ecommerce
+    rules:
+      - alert: PipelineStageFailed
+        expr: ecommerce_stage_success == 0
+        for: 15s
+        labels: {severity: critical}
+        annotations: {summary: "Pipeline stage failed"}
+      - alert: DataQualityFailed
+        expr: ecommerce_quality_check_success{severity="error"} == 0
+        for: 15s
+        labels: {severity: critical}
+        annotations: {summary: "Data quality check failed"}
+      - alert: VolumeAnomaly
+        expr: ecommerce_quality_check_success{severity="warning"} == 0
+        for: 15s
+        labels: {severity: warning}
+        annotations: {summary: "Dataset volume changed unexpectedly"}
+      - alert: QualityCheckStale
+        expr: time() - ecommerce_stage_last_attempt_timestamp_seconds{stage="quality_gate"} > 7200
+        labels: {severity: warning}
+        annotations: {summary: "Quality gate has not run in two hours"}
+      - alert: MetricsUnavailable
+        expr: up == 0
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: "Metrics file unavailable"}

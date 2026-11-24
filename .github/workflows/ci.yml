@@ -33,5 +33,8 @@ jobs:
           SPARK_LOCAL_IP: 127.0.0.1
       - run: pip install -r requirements-orchestration.txt
       - run: RUN_ORCHESTRATION_TESTS=1 python -m unittest discover -s tests -p test_warehouse.py -v
+      - run: RUN_ORCHESTRATION_TESTS=1 python -m unittest discover -s tests -p test_quality.py -v
+      - run: |
+          docker run --rm -v "$PWD/monitoring:/etc/prometheus:ro" --entrypoint /bin/promtool prom/prometheus:v3.2.1 check config /etc/prometheus/prometheus.yml
       - if: always()
         run: docker compose -f compose.yaml -f compose.kafka.yaml down -v

@@ -1,0 +1,145 @@
+{
+  "uid": "ecommerce-pipeline",
+  "title": "E-Commerce Pipeline Health",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Stage success",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ecommerce-prom"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ecommerce_stage_success",
+          "legendFormat": "{{stage}}{{dataset}}{{check}}{{alertname}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Stage duration (seconds)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ecommerce-prom"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ecommerce_stage_duration_seconds",
+          "legendFormat": "{{stage}}{{dataset}}{{check}}{{alertname}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Dataset rows",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ecommerce-prom"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ecommerce_dataset_rows",
+          "legendFormat": "{{stage}}{{dataset}}{{check}}{{alertname}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Quality checks",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ecommerce-prom"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ecommerce_quality_check_success",
+          "legendFormat": "{{stage}}{{dataset}}{{check}}{{alertname}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Quality gate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ecommerce-prom"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ecommerce_quality_success",
+          "legendFormat": "{{stage}}{{dataset}}{{check}}{{alertname}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Active alerts",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ecommerce-prom"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ALERTS{alertstate=\"firing\"}",
+          "legendFormat": "{{stage}}{{dataset}}{{check}}{{alertname}}"
+        }
+      ]
+    }
+  ]
+}

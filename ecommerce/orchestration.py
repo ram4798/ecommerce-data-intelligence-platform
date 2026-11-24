@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from dagster import asset, Definitions, RetryPolicy, define_asset_job, ScheduleDefinition, AssetSelection, in_process_executor
 from ecommerce.lakehouse import ROOT
+from ecommerce.observability import measured
 
 def warehouse_path():
     return str(Path(os.getenv("WAREHOUSE_PATH", str(ROOT / "data/warehouse.duckdb"))).resolve())
@@ -20,25 +21,34 @@ retry = RetryPolicy(max_retries=2, delay=10)
 
 @asset(retry_policy=retry, group_name="lakehouse")
 def batch_delta():
-    command("ecommerce.lakehouse", "batch")
+    with measured("batch_delta"):
+        command("ecommerce.lakehouse", "batch")
 
 @asset(deps=[batch_delta], retry_policy=retry, group_name="lakehouse")
 def streaming_delta():
-    command("ecommerce.lakehouse", "stream")
+    with measured("streaming_delta"):
+        command("ecommerce.lakehouse", "stream")
 
 @asset(deps=[streaming_delta], retry_policy=retry, group_name="warehouse")
 def warehouse_sources():
-    command("ecommerce.warehouse")
+    with measured("warehouse_sources"):
+        command("ecommerce.warehouse")
 
 @asset(deps=[warehouse_sources], retry_policy=retry, group_name="analytics")
 def dbt_marts():
-    dbt("build")
+    with measured("dbt_marts"):
+        dbt("build")
 
-@asset(deps=[dbt_marts], group_name="analytics")
+@asset(deps=[dbt_marts], group_name="quality")
+def quality_gate():
+    command("ecommerce.quality")
+
+@asset(deps=[quality_gate], group_name="analytics")
 def dbt_documentation():
-    dbt("docs", "generate")
+    with measured("dbt_documentation"):
+        dbt("docs", "generate")
 
 refresh = define_asset_job("refresh_analytics", selection=AssetSelection.all(), executor_def=in_process_executor)
 schedule = ScheduleDefinition(job=refresh, cron_schedule="0 * * * *", execution_timezone="UTC")
-defs = Definitions(assets=[batch_delta, streaming_delta, warehouse_sources, dbt_marts, dbt_documentation],
+defs = Definitions(assets=[batch_delta, streaming_delta, warehouse_sources, dbt_marts, quality_gate, dbt_documentation],
                    jobs=[refresh], schedules=[schedule])

@@ -43,3 +43,7 @@ See [Phase 4 lakehouse setup](docs/lakehouse.md) for Java 17, pinned Spark depen
 ## dbt and Dagster
 
 See [Phase 5 orchestration guide](docs/orchestration.md) for snapshot export, dbt models and the local Dagster UI.
+
+## Data quality and monitoring
+
+See [Phase 6 monitoring guide](docs/monitoring.md) for quality gate, structured stage metrics, Prometheus alerts, Grafana and controlled failure recovery.
