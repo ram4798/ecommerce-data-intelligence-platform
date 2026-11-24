@@ -31,5 +31,7 @@ jobs:
       - run: RUN_LAKEHOUSE_TESTS=1 python -m unittest discover -s tests -p test_lakehouse.py -v
         env:
           SPARK_LOCAL_IP: 127.0.0.1
+      - run: pip install -r requirements-orchestration.txt
+      - run: RUN_ORCHESTRATION_TESTS=1 python -m unittest discover -s tests -p test_warehouse.py -v
       - if: always()
         run: docker compose -f compose.yaml -f compose.kafka.yaml down -v

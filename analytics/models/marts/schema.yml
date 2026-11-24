@@ -1,0 +1,56 @@
+version: 2
+models:
+  - name: dim_customers
+    description: One row per synthetic customer.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+  - name: dim_products
+    description: One row per product.
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+  - name: dim_dates
+    description: Distinct UTC dates in orders or events.
+    columns:
+      - name: date_day
+        data_tests: [unique, not_null]
+  - name: fct_sales
+    description: One row per order item; immutable synthetic records.
+    columns:
+      - name: order_item_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+      - name: product_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_id
+      - name: status
+        data_tests:
+          - accepted_values:
+              values: ['placed','paid','shipped','cancelled']
+  - name: fct_payments
+    description: One payment per paid or shipped order.
+    columns:
+      - name: payment_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests: [unique, not_null]
+  - name: fct_events
+    description: One row per validated event identity.
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: event_type
+        data_tests:
+          - accepted_values:
+              values: ['page_view','product_view','cart_add','purchase']
+  - name: mart_daily_sales
+    description: Daily regional gross and paid order values in cents.

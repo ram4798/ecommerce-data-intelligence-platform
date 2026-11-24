@@ -5,3 +5,9 @@ __pycache__/
 data/
 .pytest_cache/
 .DS_Store
+
+analytics/target/
+analytics/logs/
+analytics/dbt_packages/
+analytics/.user.yml
+logs/
