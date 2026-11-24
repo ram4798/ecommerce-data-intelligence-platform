@@ -50,6 +50,13 @@ flowchart LR
 
 Measured locally on Apple M2, 8 GB RAM, November 24, 2026. The scaling benchmark generated and validated relational records but loaded only orders into temporary DuckDB; it is not full-stack throughput. Stage durations are historical observations. See [benchmark methodology and results](docs/performance.md).
 
+## Dashboard preview
+
+<!-- Dashboard image is displayed after docs/images/dashboard-overview.png is uploaded. -->
+![Interactive Streamlit dashboard with sales KPIs, business filters, regional sales, product categories and AI assistant access](docs/images/dashboard-overview.png)
+
+*Actual local application: $86,161.18 gross order value, $42,549.60 paid order value, 1,500 orders, 100 customers and 17 successful quality checks.*
+
 ## Application walkthrough
 
 | Screen | What to demonstrate |
@@ -60,7 +67,7 @@ Measured locally on Apple M2, 8 GB RAM, November 24, 2026. The scaling benchmark
 | AI assistant | Ranked customers, dollar-formatted table, SQL and parameters |
 | Dagster / Grafana | Asset dependencies, execution history and monitoring |
 
-[Five-minute live demo guide](docs/demo.md). Actual application screenshots will be added after clean captures are available; charts above are generated from observed benchmark values, not mock application screenshots.
+[Five-minute live demo guide](docs/demo.md). Additional application screenshots are planned; benchmark charts above are generated from observed measurements.
 
 ## Setup and demo
 
