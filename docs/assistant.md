@@ -37,3 +37,7 @@ Automated evaluation: RUN_APP_TESTS=1 python -m unittest discover -s tests -p te
 | Delete all orders or read /etc/passwd | unsupported or validation rejection |
 
 Record actual plan, result and correctness; do not claim accuracy until tested.
+
+## Live evaluation regression: regional ranking
+
+The first local evaluation returned US-Central ($29,986.39) for the highest gross sales region because the model inserted an unrequested region filter and limit 10. The correct result is US-East ($30,719.66). The planner now uses a deterministic plan for the narrow, explicit "Which region has the highest/lowest gross sales/gross order value/paid sales/paid order value?" question family, after model schema validation. Other plans reject filters not literally grounded in the question (including ISO dates) and inconsistent explicit numeric top/bottom rankings. This is intentionally conservative: aliases, relative dates, omitted requested filters and more complex intent may still fail or be misunderstood. Tests reproduce the actual bad model plan with three regions and a mocked provider. Live retesting is required.
