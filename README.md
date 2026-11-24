@@ -1,6 +1,6 @@
 # E-Commerce Data Intelligence Platform
 
-Local-first portfolio project using synthetic data. Phase 1 foundation and Phase 2 relational batch loader are implemented; streaming, lakehouse, dashboards and AI remain planned.
+Local-first portfolio project using synthetic data. Phase 1 foundation, Phase 2 relational batch loader and Phase 3 Kafka streaming are implemented; Spark, lakehouse, dashboards and AI remain planned.
 
 ## Run locally (Python 3.11, Docker Compose)
 ```bash
@@ -31,3 +31,7 @@ Integration tests run in CI using a disposable PostgreSQL container. **Do not se
 7. Observability, benchmarks and portfolio demo.
 
 See [architecture notes](docs/architecture.md) and [batch design](docs/batch.md). Independent synthetic-data implementation; no employer data.
+
+## Kafka streaming
+
+See [Phase 3 streaming setup and replay demo](docs/streaming.md). Install the pinned streaming dependency and start Kafka using the additional Compose file. Existing batch commands remain unchanged.
