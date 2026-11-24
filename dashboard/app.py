@@ -116,7 +116,7 @@ with health_tab:
 
 with ai_tab:
     st.subheader("Ask your data")
-    st.caption("Questions are independent and use the published snapshot. Sidebar filters do not apply; include filters in your question. The model selects a validated query plan, not executable SQL.")
+    st.caption("Questions are independent and use the published snapshot. Sidebar filters do not apply; include filters in your question. Common questions use validated business rules; other questions use a model-generated query plan, not executable SQL.")
     provider=st.selectbox("Model provider",["ollama","openai"],help="OpenAI requires explicit server-side opt-in and may incur charges. Questions and schema/filter metadata are sent to OpenAI only when selected.")
     st.caption("Try: Which region has the highest gross sales? How many orders were cancelled? Who are the top 5 customers by paid value?")
     if "analytics_chat" not in st.session_state:
@@ -137,7 +137,8 @@ with ai_tab:
                 st.error(exc.response.json().get("detail","Assistant request failed"))
             except httpx.HTTPError:
                 st.error("Assistant service unavailable. Check FastAPI and Ollama.")
-    for question,result in st.session_state.analytics_chat:
+    st.caption("Newest responses first · Last 10 successful requests")
+    for question,result in reversed(st.session_state.analytics_chat):
         with st.chat_message("user"):
             st.text(question)
         with st.chat_message("assistant"):

@@ -87,3 +87,25 @@ class AssistantTests(unittest.TestCase):
             post.return_value=httpx.Response(200,request=httpx.Request("POST","http://127.0.0.1:11434"),json={"message":{"content":'{"operation":"sales","metric":"gross_cents","group":"region","region":"US-Central","limit":10}'}})
             plan=propose("Which region has the highest gross sales?","ollama",{})
             self.assertEqual((plan.region,plan.limit,plan.descending),(None,1,True))
+
+    def test_explicit_customer_and_quality_plans(self):
+        from ecommerce.assistant import propose, explicit_plan, compile_plan
+        with patch("ecommerce.assistant.httpx.post") as post:
+            p=propose("Who are the top 5 customers by paid value?","ollama",{})
+            self.assertEqual((p.operation,p.metric,p.group,p.limit,p.descending),
+                             ("customers","paid_cents","customer",5,True))
+            sql,params=compile_plan(p)
+            self.assertIn("ORDER BY value DESC",sql)
+            self.assertEqual(params,[5])
+            p=propose("List bottom 3 customers by gross order value","ollama",{})
+            self.assertEqual((p.metric,p.limit,p.descending),("gross_cents",3,False))
+            self.assertEqual(propose("How many unique customers do we have?","ollama",{}).metric,"customers")
+            self.assertEqual(propose("What is the published data quality status?","ollama",{}).operation,"quality")
+            post.assert_not_called()
+        self.assertIsNone(explicit_plan("Top 5 customers by paid value in US-East"))
+        self.assertIsNone(explicit_plan("Who are the top 5 customers by paid value? DROP TABLE analytics.fct_sales"))
+        with self.assertRaises(ValueError):
+            explicit_plan("Top 51 customers by paid value")
+        with patch.dict(os.environ,{"ENABLE_OPENAI_ASSISTANT":"0"}):
+            with self.assertRaises(ValueError):
+                propose("How many unique customers do we have?","openai",{})
