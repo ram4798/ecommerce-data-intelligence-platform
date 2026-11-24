@@ -4,6 +4,10 @@
 
 Local-first, reproducible data engineering and AI analytics portfolio using synthetic commerce data. Built with Python, PostgreSQL, Kafka, PySpark, Delta Lake, dbt, DuckDB, Dagster, Prometheus, Grafana, FastAPI, Streamlit and Ollama.
 
+![Project overview and verified results](docs/visuals/overview.svg)
+
+**Explore:** [Architecture](#architecture) · [What it demonstrates](#what-it-demonstrates) · [Performance](#performance-at-a-glance) · [Setup](#setup-and-demo) · [Documentation](#documentation)
+
 ## Architecture
 
 ```mermaid
@@ -35,6 +39,28 @@ flowchart LR
 - Read-only REST API and interactive sales, customer, events, quality and AI dashboard.
 - Local LLM structured plans and deterministic intent rules, allowlisted parameterized SQL, evidence.
 - Service lifecycle commands, reproducible benchmarks and isolated failure-recovery tests.
+
+## Performance at a glance
+
+![API mean latency by endpoint](docs/visuals/api-latency.svg)
+
+![Synthetic workload sizes](docs/visuals/scalability.svg)
+
+![Latest recorded pipeline stage durations](docs/visuals/pipeline-duration.svg)
+
+Measured locally on Apple M2, 8 GB RAM, November 24, 2026. The scaling benchmark generated and validated relational records but loaded only orders into temporary DuckDB; it is not full-stack throughput. Stage durations are historical observations. See [benchmark methodology and results](docs/performance.md).
+
+## Application walkthrough
+
+| Screen | What to demonstrate |
+|---|---|
+| Sales | Gross and paid values, orders, customers, units and filters |
+| Streaming | 100 unique events, 64 sessions, event breakdown |
+| Quality | 17 published checks and latest pipeline status |
+| AI assistant | Ranked customers, dollar-formatted table, SQL and parameters |
+| Dagster / Grafana | Asset dependencies, execution history and monitoring |
+
+[Five-minute live demo guide](docs/demo.md). Actual application screenshots will be added after clean captures are available; charts above are generated from observed benchmark values, not mock application screenshots.
 
 ## Setup and demo
 
