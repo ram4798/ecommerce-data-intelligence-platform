@@ -1,34 +1,33 @@
 # E-Commerce Data Intelligence Platform
 
-A local-first portfolio project for batch and streaming e-commerce analytics. **Phase 1: synthetic data and reproducible development foundation.** Streaming, lakehouse, dashboards and AI are planned, not implemented.
+Local-first portfolio project using synthetic data. Phase 1 foundation and Phase 2 relational batch loader are implemented; streaming, lakehouse, dashboards and AI remain planned.
 
-## Quick start (macOS Apple Silicon / Python 3.11)
-
+## Run locally (Python 3.11, Docker Compose)
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m unittest discover -s tests -v
-python -m ecommerce.generate --orders 1000 --seed 42 --output data/raw/orders.csv
+# First setup only: cp .env.example .env
+docker compose up -d --wait postgres
+python -m ecommerce.batch --start 1 --count 1000
+python -m ecommerce.batch --start 1 --count 1000
+python -m ecommerce.batch --start 1001 --count 500
+docker compose exec postgres psql -U ecommerce -d ecommerce -c "SELECT count(*) FROM ecommerce.orders;"
+docker compose exec postgres psql -U ecommerce -d ecommerce -c "SELECT run_id,status,row_counts FROM ecommerce.ingestion_runs ORDER BY run_id;"
 ```
+Expected order count on an initially empty database: 1500. The loader uses deterministic IDs, insert-on-conflict-ignore semantics, validation and a transaction. Audit counts represent submitted rows, not newly inserted rows. Failed runs are recorded separately when the database is reachable. Interrupted runs may remain running. Inventory is a static synthetic snapshot, not a stock ledger. One payment per paid/shipped order and at most one return per item. All money is USD cents.
 
-The generator produces deterministic synthetic order records; money is stored in integer USD cents. Output is ignored by Git. No credentials or paid services required.
+Phase 1 CSV remains available: `python -m ecommerce.generate --orders 1000`.
 
-Optional PostgreSQL foundation:
-```bash
-cp .env.example .env
-docker compose up -d postgres
-docker compose ps
-docker compose down
-```
-Use a local-only password in .env; never commit it. PostgreSQL is infrastructure only in this phase.
+Integration tests run in CI using a disposable PostgreSQL container. **Do not set RUN_DB_TESTS=1 against a database you want to retain**: the integration test drops the ecommerce schema. Local credentials stay in ignored .env. No paid services required.
 
 ## Roadmap
-1. Synthetic data, tests and local infrastructure (this phase).
-2. PostgreSQL batch ingestion with idempotency and validation.
+1. Synthetic orders and local infrastructure.
+2. Relational schema and incremental batch ingestion.
 3. Kafka and Spark Structured Streaming.
-4. Delta Lake layers, dbt models and Dagster orchestration.
-5. Analytics and FastAPI.
-6. Read-only AI analytics with Ollama and optional OpenAI API.
+4. Delta Lake layers, dbt and Dagster.
+5. APIs and dashboards.
+6. Read-only AI assistant (Ollama / optional OpenAI).
 7. Observability, benchmarks and portfolio demo.
 
-See [architecture notes](docs/architecture.md). This is an independent implementation using synthetic data, not employer data or a completed course fork.
+See [architecture notes](docs/architecture.md) and [batch design](docs/batch.md). Independent synthetic-data implementation; no employer data.
