@@ -7,7 +7,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,5 +23,13 @@ jobs:
       - run: |
           docker compose -f compose.yaml -f compose.kafka.yaml up -d --wait kafka
           RUN_STREAM_TESTS=1 python -m unittest discover -s tests -p test_stream_integration.py -v
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: pip install -r requirements-lakehouse.txt
+      - run: RUN_LAKEHOUSE_TESTS=1 python -m unittest discover -s tests -p test_lakehouse.py -v
+        env:
+          SPARK_LOCAL_IP: 127.0.0.1
       - if: always()
         run: docker compose -f compose.yaml -f compose.kafka.yaml down -v
