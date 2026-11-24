@@ -1,6 +1,6 @@
 # E-Commerce Data Intelligence Platform
 
-Local-first portfolio project using synthetic data. Phases 1–4 implement the local foundation, relational batch loader, Kafka streaming and Spark/Delta lakehouse. Phase 5 adds DuckDB-backed dbt marts and Dagster orchestration; dashboards and AI remain planned.
+Local-first portfolio project using synthetic data. Phases 1–4 implement the local foundation, relational batch loader, Kafka streaming and Spark/Delta lakehouse. Phase 5 adds DuckDB-backed dbt marts and Dagster orchestration; Phase 6 adds observability and Phase 7 adds a read-only API and dashboard; AI remains planned.
 
 ## Run locally (Python 3.11, Docker Compose)
 ```bash
@@ -47,3 +47,7 @@ See [Phase 5 orchestration guide](docs/orchestration.md) for snapshot export, db
 ## Data quality and monitoring
 
 See [Phase 6 monitoring guide](docs/monitoring.md) for quality gate, structured stage metrics, Prometheus alerts, Grafana and controlled failure recovery.
+
+## Analytics application
+
+See [Phase 7 application guide](docs/application.md) for FastAPI, Streamlit and serving snapshots.

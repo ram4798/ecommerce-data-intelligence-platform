@@ -48,7 +48,11 @@ def dbt_documentation():
     with measured("dbt_documentation"):
         dbt("docs", "generate")
 
+@asset(deps=[quality_gate], group_name="serving")
+def publish_serving():
+    command("ecommerce.serving")
+
 refresh = define_asset_job("refresh_analytics", selection=AssetSelection.all(), executor_def=in_process_executor)
 schedule = ScheduleDefinition(job=refresh, cron_schedule="0 * * * *", execution_timezone="UTC")
-defs = Definitions(assets=[batch_delta, streaming_delta, warehouse_sources, dbt_marts, quality_gate, dbt_documentation],
+defs = Definitions(assets=[batch_delta, streaming_delta, warehouse_sources, dbt_marts, quality_gate, dbt_documentation, publish_serving],
                    jobs=[refresh], schedules=[schedule])
