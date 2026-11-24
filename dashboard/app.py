@@ -4,6 +4,7 @@ import httpx
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from ecommerce.dashboard_format import assistant_frame
 
 st.set_page_config(page_title="E-Commerce Intelligence",page_icon="📊",layout="wide")
 API=os.getenv("ANALYTICS_API_URL","http://127.0.0.1:8000")
@@ -144,7 +145,9 @@ with ai_tab:
         with st.chat_message("assistant"):
             st.text(result["answer"])
             if result["rows"]:
-                st.dataframe(pd.DataFrame(result["rows"]),hide_index=True,use_container_width=True)
+                frame=assistant_frame(result)
+                currency={col:st.column_config.NumberColumn(format="$%.2f") for col in frame.columns if col.endswith("($)")}
+                st.dataframe(frame,hide_index=True,use_container_width=True,column_config=currency)
             with st.expander("Query plan and evidence"):
                 st.json(result["plan"])
                 if result["sql"]:

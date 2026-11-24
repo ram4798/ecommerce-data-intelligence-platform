@@ -22,6 +22,8 @@ scrape_configs:
         labels: {stage_file: dbt_documentation}
       - targets: ["metrics:80"]
         labels: {stage_file: quality_gate}
+      - targets: ["metrics:80"]
+        labels: {stage_file: publish_serving}
     relabel_configs:
       - source_labels: [stage_file]
         regex: (.+)

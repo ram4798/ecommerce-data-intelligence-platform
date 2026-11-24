@@ -39,5 +39,6 @@ jobs:
       - run: pip install -r requirements-app.txt
       - run: RUN_APP_TESTS=1 python -m unittest discover -s tests -p test_api.py -v
       - run: RUN_APP_TESTS=1 python -m unittest discover -s tests -p test_assistant.py -v
+      - run: RUN_APP_TESTS=1 python -m unittest discover -s tests -p test_phase9.py -v
       - if: always()
         run: docker compose -f compose.yaml -f compose.kafka.yaml down -v
